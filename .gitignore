@@ -1,1 +1,5 @@
 .ssh/
+.venv/
+*.toml
+*.lock
+.env

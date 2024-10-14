@@ -2,13 +2,13 @@ from pyspark.sql.types import StringType
 from pyspark.sql.functions import *
 from pyspark.sql import SparkSession
 from pyspark.conf import SparkConf
-
+import os
 #Вы только не расслабляйтесь, если решение вы будете подгонять под этот скрипт, это не гарантирует очки за корректность работы
 
 level = "2" #Какую таблицу тестируем, маленькую, среднюю или большую
 your_bucket_name = "result" #Имя вашего бакета
-your_access_key = "***" #Ключ от вашего бакета
-your_secret_key = "***" #Ключ от вашего бакета
+your_access_key = os.environ.get('ACCESS') #Ключ от вашего бакета
+your_secret_key = os.environ.get('SECRET')
 
 configs = {
     "spark.sql.files.maxPartitionBytes": "1073741824", #1GB
