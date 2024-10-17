@@ -3,16 +3,13 @@ from pyspark.sql.functions import *
 from pyspark.sql import SparkSession
 from pyspark.conf import SparkConf
 import os
-<<<<<<< HEAD
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
-=======
-import logging
 
 logging.basicConfig(level=logging.INFO, filename="py_log.log",filemode="w",
                     format="%(asctime)s %(levelname)s %(message)s")
->>>>>>> refs/remotes/origin/main
 
 level = "2" #Какую таблицу тестируем, маленькую, среднюю или большую
 your_bucket_name = "result" #Имя вашего бакета
