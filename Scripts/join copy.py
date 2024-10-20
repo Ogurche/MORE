@@ -4,9 +4,12 @@ from pyspark.sql import SparkSession , Window
 from pyspark.conf import SparkConf
 import os
 import logging
+import dotenv
 
 logging.basicConfig(level=logging.INFO, filename="py_log.log",filemode="w",
                     format="%(asctime)s %(levelname)s %(message)s")
+
+dotenv.load_dotenv()
 
 level = "2" #Какую таблицу тестируем, маленькую, среднюю или большую
 your_bucket_name = "result" #Имя вашего бакета
