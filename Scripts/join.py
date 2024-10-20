@@ -3,7 +3,10 @@ from pyspark.sql.functions import *
 from pyspark.sql import SparkSession
 from pyspark.conf import SparkConf
 import os
+from dotenv import load_dotenv
 import logging
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO, filename="py_log.log",filemode="w",
                     format="%(asctime)s %(levelname)s %(message)s")

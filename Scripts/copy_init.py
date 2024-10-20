@@ -3,11 +3,14 @@ from pyspark.sql.functions import *
 from pyspark.sql import SparkSession
 from pyspark.conf import SparkConf
 import os
+from dotenv import load_dotenv
 
-level = "2" #Какую таблицу тестируем, маленькую, среднюю или большую
+load_dotenv()
+
+level = "3" #Какую таблицу тестируем, маленькую, среднюю или большую
 your_bucket_name = "result" #Имя вашего бакета
-your_access_key = os.environ.get('ACCESS') #Ключ от вашего бакета
-your_secret_key = os.environ.get('SECRET') #Ключ от вашего бакета
+your_access_key = os.getenv('ACCESS') #Ключ от вашего бакета
+your_secret_key = os.getenv('SECRET') #Ключ от вашего бакета
 
 
 configs = {
