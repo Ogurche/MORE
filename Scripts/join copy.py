@@ -76,17 +76,20 @@ replica = replica0.filter(col("eff_to_month") == lit("5999-12-31")).selectExpr(c
 replica.write.mode("append").partitionBy("eff_to_month", "eff_from_month").parquet(temp_table)
 replica.unpersist()
 
-
+logging.info("НАЧАЛО ROW_NUMBER") 
 # Выбираем по row_number = 1 and 5999
 w = Window.partitionBy("id").orderBy(desc('eff_from_dt'),desc('eff_to_dt'))
 # to_insert0 = spark.read.parquet(temp_table)
 to_insert = spark.read.parquet(temp_table) \
     .repartition('id') \
-    .withColumn('rn', row_number().over(w)) \
-    .filter(((col("eff_to_dt") == lit("5999-12-31")) & (col('rn') == 1)) | (col("eff_to_dt") != lit("5999-12-31"))) \
-    .selectExpr(columns) \
-    .cache()
+    .withColumn('rn', (row_number().over(w)).cast(StringType())) \
+    .selectExpr(columns)
 
+logging.info("ОБРАБОТКА ROW_NUMBER")
+to_insert = to_insert\
+    .filter(((col("eff_to_dt") == lit("5999-12-31")) & (col('rn') == lit("1"))) | (col("eff_to_dt") != lit("5999-12-31")))
+
+logging.info("КОНЕЦ ROW_NUMBER") 
 
 # Теперь надо перенести данные из темповой в основную таблицу
 # Закрытые партиции мы переносим просто так, а 5999-12-31 надо перетереть

@@ -72,6 +72,7 @@ log.info(f"SRC STARTED")
 src.write.mode("overwrite").partitionBy("eff_to_month", "eff_from_month").parquet(temp_table)
 logging.info("Записал инкремент во времянку с партициями по eff_to_month, eff_from_month")
 log.info(f"SRC written, defining closed data")
+
 src_closed = src.filter(col("eff_to_month") != lit("5999-12-31")).select("id", "eff_from_month", "eff_from_dt").cache()
 logging.info("Создаем набор где eff_to_month НЕ равен строке 5999-12-31")
 src_closed.isEmpty()
