@@ -81,13 +81,15 @@ logging.info("НАЧАЛО ROW_NUMBER")
 w = Window.partitionBy("id").orderBy(desc('eff_from_dt'),desc('eff_to_dt'))
 # to_insert0 = spark.read.parquet(temp_table)
 to_insert = spark.read.parquet(temp_table) \
+    .repartition('id') \
     .withColumn('rn', (row_number().over(w)).cast(StringType())) \
     .selectExpr(columns)
 
-# .repartition('id') \
+
 logging.info("ОБРАБОТКА ROW_NUMBER")
 to_insert = to_insert\
-    .filter(((col("eff_to_dt") == lit("5999-12-31")) & (col('rn') == lit("1"))) | (col("eff_to_dt") != lit("5999-12-31")))
+    .filter(((col("eff_to_dt") == lit("5999-12-31")) & (col('rn') == lit("1"))) | (col("eff_to_dt") != lit("5999-12-31"))) \
+    .repartition("eff_to_month", "eff_from_month")
 
 logging.info("КОНЕЦ ROW_NUMBER") 
 
