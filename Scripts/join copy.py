@@ -27,8 +27,8 @@ configs = {
     "spark.hadoop.fs.s3a.multipart.threshold": "536870912", # 512MB
     "spark.hadoop.fs.s3a.committer.name": "magic",
     "spark.hadoop.fs.s3a.bucket.all.committer.magic.enabled": "true",
-    "spark.hadoop.fs.s3a.threads.max": "64",
-    "spark.hadoop.fs.s3a.connection.maximum": "64",
+    "spark.hadoop.fs.s3a.threads.max": "64", # можно увеличить 
+    "spark.hadoop.fs.s3a.connection.maximum": "64", # можно увеличить 
     "spark.hadoop.fs.s3a.fast.upload.buffer": "array",
     "spark.hadoop.fs.s3a.directory.marker.retention": "keep",
     "spark.hadoop.fs.s3a.endpoint": "api.s3.az1.t1.cloud",
@@ -69,7 +69,6 @@ logging.info("Кэшировал инкремент и добавил колон
 log.info(f"increment STARTED")
 
 # Записываем записи во времянку
-increment = increment.selectExpr(columns).cache()
 increment.write.mode("overwrite").partitionBy("eff_to_month", "eff_from_month").parquet(temp_table)
 increment.unpersist()
 
@@ -79,13 +78,15 @@ replica.unpersist()
 
 
 # Выбираем по row_number = 1 and 5999
-w = Window.partitionBy("id".orderBy(desc('eff_to_dt'), desc('eff_from_dt')))
-to_insert0 = spark.read.parquet(temp_table)
-to_insert = to_insert0.\
-    withColumn('rn', row_number().over(w))
-to_insert = to_insert.filter(col("eff_to_month") == lit("5999-12-31")). \
-    filter(col("eff_to_month") == lit('1'))
-to_insert.cache()
+w = Window.partitionBy("id").orderBy(desc('eff_from_dt'),desc('eff_to_dt'))
+# to_insert0 = spark.read.parquet(temp_table)
+to_insert = spark.read.parquet(temp_table) \
+    .repartition('id') \
+    .withColumn('rn', row_number().over(w)) \
+    .filter(((col("eff_to_dt") == lit("5999-12-31")) & (col('rn') == 1)) | (col("eff_to_dt") != lit("5999-12-31"))) \
+    .selectExpr(columns) \
+    .cache()
+
 
 # Теперь надо перенести данные из темповой в основную таблицу
 # Закрытые партиции мы переносим просто так, а 5999-12-31 надо перетереть
@@ -96,7 +97,8 @@ path = spark._jvm.org.apache.hadoop.fs.Path(f"{repl_table}/eff_to_month=5999-12-
 fs.delete(path, True)
 logging.info("Удаление актуальных записей в реплике") 
 
-spark.read.parquet(temp_table).write.mode("append").partitionBy("eff_to_month", "eff_from_month").parquet(repl_table)
+to_insert.write.mode("append").partitionBy("eff_to_month", "eff_from_month").parquet(repl_table)
+to_insert.unpersist()
 logging.info("Запись в реплику из TMP") 
 
 path = spark._jvm.org.apache.hadoop.fs.Path(temp_table)
