@@ -91,6 +91,11 @@ to_insert = to_insert\
 
 logging.info("КОНЕЦ ROW_NUMBER") 
 
+logging.info("Перезапись темп старт") 
+
+to_insert.write.mode("overwrite").partitionBy("eff_to_month", "eff_from_month").parquet(temp_table)
+
+logging.info("Перезапись темп энд") 
 # Теперь надо перенести данные из темповой в основную таблицу
 # Закрытые партиции мы переносим просто так, а 5999-12-31 надо перетереть
 
@@ -100,7 +105,7 @@ path = spark._jvm.org.apache.hadoop.fs.Path(f"{repl_table}/eff_to_month=5999-12-
 fs.delete(path, True)
 logging.info("Удаление актуальных записей в реплике") 
 
-to_insert.write.mode("append").partitionBy("eff_to_month", "eff_from_month").parquet(repl_table)
+spark.read.parquet(temp_table).write.mode("append").partitionBy("eff_to_month", "eff_from_month").parquet(repl_table)
 logging.info("Запись в реплику из TMP") 
 
 path = spark._jvm.org.apache.hadoop.fs.Path(temp_table)
