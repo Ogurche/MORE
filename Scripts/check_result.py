@@ -3,7 +3,10 @@ from pyspark.sql.functions import *
 from pyspark.sql import SparkSession
 from pyspark.conf import SparkConf
 import os
+import dotenv
 #Вы только не расслабляйтесь, если решение вы будете подгонять под этот скрипт, это не гарантирует очки за корректность работы
+
+dotenv.load_dotenv()
 
 level = "2" #Какую таблицу тестируем, маленькую, среднюю или большую
 your_bucket_name = "result" #Имя вашего бакета
