@@ -101,7 +101,6 @@ fs.delete(path, True)
 logging.info("Удаление актуальных записей в реплике") 
 
 to_insert.write.mode("append").partitionBy("eff_to_month", "eff_from_month").parquet(repl_table)
-to_insert.unpersist()
 logging.info("Запись в реплику из TMP") 
 
 path = spark._jvm.org.apache.hadoop.fs.Path(temp_table)
